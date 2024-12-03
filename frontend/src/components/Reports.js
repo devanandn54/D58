@@ -17,7 +17,7 @@ const Reports = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/stats/monthly-stats", {
+        const response = await fetch("/api/stats/monthly-stats", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) throw new Error("Failed to fetch data");
