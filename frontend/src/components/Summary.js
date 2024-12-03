@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useApi } from "../utils/api";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell,
@@ -11,26 +12,30 @@ const Summary = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { token } = useAuth();
+  const { fetchWithToken } = useApi();
 
   const COLORS = ['#4ade80', '#60a5fa', '#f97316'];
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/api/stats/yearly-stats", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!response.ok) throw new Error("Failed to fetch data");
-        const jsonData = await response.json();
-        setYearlyData(jsonData);
-        setLoading(false);
+        const response = await fetchWithToken("/api/stats/yearly-stats");
+        if (response.ok) {
+          const jsonData = await response.json();
+          setYearlyData(jsonData);
+          setLoading(false);
+        }
       } catch (error) {
-        setError(error.message);
+        if (error.message === "Token expired") {
+          // Already handled by AuthContext
+        } else {
+          setError("Failed to fetch data");
+        }
         setLoading(false);
       }
     };
     fetchData();
-  }, [token]);
+  }, [fetchWithToken]);
 
   // Transform the resource allocation data for the pie chart
   const getResourceData = (yearData) => {

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useApi } from "../utils/api";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis
@@ -6,31 +7,38 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { BarChart2, PieChartIcon, Activity } from "lucide-react";
 
+
+
 const Reports = () => {
   const [monthlyData, setMonthlyData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { token } = useAuth();
+  const { fetchWithToken } = useApi();
 
   const COLORS = ['#4ade80', '#60a5fa', '#f97316', '#a855f7'];
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/api/stats/monthly-stats", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!response.ok) throw new Error("Failed to fetch data");
-        const jsonData = await response.json();
-        setMonthlyData(jsonData);
-        setLoading(false);
+        const response = await fetchWithToken("/api/stats/monthly-stats");
+        if (response.ok) {
+          const jsonData = await response.json();
+          setMonthlyData(jsonData);
+          setLoading(false);
+        }
+        
       } catch (error) {
-        setError(error.message);
+        if (error.message === "Token expired") {
+          // Already handled by AuthContext
+        } else {
+          setError("Failed to fetch data");
+        }
         setLoading(false);
       }
     };
     fetchData();
-  }, [token]);
+  }, [fetchWithToken]);
 
   // Transform data for event type distribution
   const getEventTypeData = (data) => {
