@@ -13,13 +13,14 @@ import Reports from "./components/Reports";
 
 
 const PrivateRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  const { token } = useAuth();
+  return token ? children : <Navigate to="/login" />;
 };
 const App = () => {
   return (
-    <AuthProvider>
+    
       <Router>
+        <AuthProvider>
         <div className="min-h-screen bg-gray-100">
           <Routes>
             <Route path="/login" element={<Login/>} />
@@ -58,8 +59,9 @@ const App = () => {
             />
           </Routes>
         </div>
+        </AuthProvider>
       </Router>
-    </AuthProvider>
+    
   );
 };
 
